@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Analysis Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px;
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .header-content h1 {
+            color: var(--text-primary);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        
+        .workflow-id {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            background: var(--bg-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .file-name {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .back-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #f0f4ff 100%);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .section-group {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .section-title::before {
+            content: '📋';
+            font-size: 24px;
+        }
+        
+        .section-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 24px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .section-item:hover {
+            border-left-color: var(--primary-dark);
+            box-shadow: var(--shadow-md);
+            transform: translateX(2px);
+        }
+        
+        .section-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--primary-light);
+            border-radius: 6px;
+        }
+        
+        .section-content {
+            margin-bottom: 0;
+        }
+        
+        .section-field {
+            margin-bottom: 20px;
+        }
+        
+        .section-field:last-child {
+            margin-bottom: 0;
+        }
+        
+        .field-label {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: block;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+        }
+        
+        .field-value {
+            color: var(--text-primary);
+            line-height: 1.8;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 15px;
+        }
+
+        .field-value.markdown-content {
+            background: var(--bg-primary);
+            padding: 0;
+            border: none;
+        }
+
+        .field-value.markdown-content h1,
+        .field-value.markdown-content h2,
+        .field-value.markdown-content h3 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .field-value.markdown-content h1 {
+            font-size: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .field-value.markdown-content h2 {
+            font-size: 20px;
+        }
+
+        .field-value.markdown-content h3 {
+            font-size: 18px;
+        }
+
+        .field-value.markdown-content p {
+            margin-bottom: 12px;
+        }
+
+        .field-value.markdown-content ul,
+        .field-value.markdown-content ol {
+            margin-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        .field-value.markdown-content li {
+            margin-bottom: 6px;
+        }
+
+        .field-value.markdown-content code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--primary-dark);
+        }
+
+        .field-value.markdown-content pre {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .field-value.markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .field-value.markdown-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 16px;
+            margin: 16px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .field-value.markdown-content a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .field-value.markdown-content a:hover {
+            text-decoration: underline;
+        }
+
+        .field-value.markdown-content strong {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .field-value.markdown-content em {
+            font-style: italic;
+        }
+        
+        .source {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .source::before {
+            content: '🔗';
+        }
+
+        .source a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .source a:hover {
+            text-decoration: underline;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 32px;
+            color: var(--text-muted);
+            font-size: 15px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 2px dashed var(--border);
+        }
+        
+        .fir-facts {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .fir-facts h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fir-facts h2::before {
+            content: '📄';
+            font-size: 24px;
+        }
+        
+        .fir-fact-item {
+            margin-bottom: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        .fir-fact-item:hover {
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .fir-fact-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .fir-fact-label {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+        }
+        
+        .fir-fact-value {
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .next-steps {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .next-steps h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .next-steps h2::before {
+            content: '✅';
+            font-size: 24px;
+        }
+
+        .next-steps-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .next-steps-list li {
+            margin-bottom: 12px;
+            padding: 14px 18px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--success);
+            transition: all 0.2s ease;
+            position: relative;
+            padding-left: 48px;
+        }
+
+        .next-steps-list li::before {
+            content: '→';
+            position: absolute;
+            left: 18px;
+            color: var(--success);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .next-steps-list li:hover {
+            box-shadow: var(--shadow-sm);
+            transform: translateX(4px);
+        }
+
+        .next-steps-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .next-steps-item-content {
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .header-meta {
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Upload New FIR</a>
+        
+        <div class="header">
+            <div class="header-content">
+                <h1>Legal Analysis Results</h1>
+            </div>
+            <div class="header-meta">
+                {% if state.pdf_filename %}
+                <div class="file-name">📄 {{ state.pdf_filename }}</div>
+                {% endif %}
+                <div class="workflow-id">ID: {{ (state.workflow_id or '')[:8] }}...</div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ state.stats.ndps_count }}</div>
+                <div class="stat-label">NDPS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ state.stats.bns_count }}</div>
+                <div class="stat-label">BNS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ state.stats.bnss_count }}</div>
+                <div class="stat-label">BNSS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ state.stats.bsa_count }}</div>
+                <div class="stat-label">BSA</div>
+            </div>
+            {% if state.stats.next_steps_count > 0 %}
+            <div class="stat-card">
+                <div class="stat-number">{{ state.stats.next_steps_count }}</div>
+                <div class="stat-label">Next Steps</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if state.fir_facts %}
+        <div class="fir-facts">
+            <h2>FIR Facts Summary</h2>
+            {% for key, value in state.fir_facts.items() %}
+            <div class="fir-fact-item">
+                <div class="fir-fact-label">{{ key.replace('_', ' ').title() }}</div>
+                <div class="fir-fact-value markdown-content" data-markdown>{{ value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if state.next_steps %}
+        <div class="next-steps">
+            <h2>Investigation Plan - Next Steps</h2>
+            <ul class="next-steps-list">
+                {% for step in state.next_steps %}
+                <li>
+                    <div class="next-steps-item-content markdown-content" data-markdown>{{ step }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if state.ndps_sections %}
+        <div class="section-group">
+            <h2 class="section-title">NDPS Act</h2>
+            {% for section in state.ndps_sections %}
+            <div class="section-item">
+                <div class="section-number">Section {{ section.section_number }}</div>
+                <div class="section-content">
+                    <div class="section-field">
+                        <span class="field-label">Description</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.section_description }}</div>
+                    </div>
+                    <div class="section-field">
+                        <span class="field-label">Relevance</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                    </div>
+                    {% if section.source %}
+                    <div class="source">
+                        {% if section.source.startswith('http') %}
+                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        {% else %}
+                        {{ section.source }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if state.bns_sections %}
+        <div class="section-group">
+            <h2 class="section-title">Bharatiya Nyaya Sanhita (BNS)</h2>
+            {% for section in state.bns_sections %}
+            <div class="section-item">
+                <div class="section-number">Section {{ section.section_number }}</div>
+                <div class="section-content">
+                    <div class="section-field">
+                        <span class="field-label">Description</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.section_description }}</div>
+                    </div>
+                    <div class="section-field">
+                        <span class="field-label">Relevance</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                    </div>
+                    {% if section.source %}
+                    <div class="source">
+                        {% if section.source.startswith('http') %}
+                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        {% else %}
+                        {{ section.source }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if state.bnss_sections %}
+        <div class="section-group">
+            <h2 class="section-title">Bharatiya Nagarik Suraksha Sanhita (BNSS)</h2>
+            {% for section in state.bnss_sections %}
+            <div class="section-item">
+                <div class="section-number">Section {{ section.section_number }}</div>
+                <div class="section-content">
+                    <div class="section-field">
+                        <span class="field-label">Description</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.section_description }}</div>
+                    </div>
+                    <div class="section-field">
+                        <span class="field-label">Relevance</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                    </div>
+                    {% if section.source %}
+                    <div class="source">
+                        {% if section.source.startswith('http') %}
+                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        {% else %}
+                        {{ section.source }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if state.bsa_sections %}
+        <div class="section-group">
+            <h2 class="section-title">Bharatiya Sakshya Adhiniyam (BSA)</h2>
+            {% for section in state.bsa_sections %}
+            <div class="section-item">
+                <div class="section-number">Section {{ section.section_number }}</div>
+                <div class="section-content">
+                    <div class="section-field">
+                        <span class="field-label">Description</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.section_description }}</div>
+                    </div>
+                    <div class="section-field">
+                        <span class="field-label">Relevance</span>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                    </div>
+                    {% if section.source %}
+                    <div class="source">
+                        {% if section.source.startswith('http') %}
+                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        {% else %}
+                        {{ section.source }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not state.ndps_sections and not state.bns_sections and not state.bnss_sections and not state.bsa_sections and not state.next_steps %}
+        <div class="empty-state">
+            <p>No sections were mapped for this FIR.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Configure marked.js
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
+
+        // Render all markdown content
+        document.querySelectorAll('[data-markdown]').forEach(element => {
+            const markdown = element.textContent.trim();
+            if (markdown) {
+                try {
+                    element.innerHTML = marked.parse(markdown);
+                } catch (error) {
+                    console.error('Error rendering markdown:', error);
+                    // Fallback to plain text if markdown parsing fails
+                    element.textContent = markdown;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
