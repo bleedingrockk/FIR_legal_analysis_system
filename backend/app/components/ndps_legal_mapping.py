@@ -3,9 +3,10 @@ from app.langgraph.state import WorkflowState
 from app.models.openai import llm_model
 from typing import List
 from app.rag.query_all import query_ndps
-import time
-import random
-from functools import wraps
+from app.utils.retry import exponential_backoff_retry
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SectionsCharged(BaseModel):
     section_number: str = Field(
@@ -33,114 +34,17 @@ class PointsToBeCharged(BaseModel):
     )
 
 
-def exponential_backoff_retry(max_retries=5, max_wait=60):
-    """
-    Decorator for exponential backoff retry on LLM calls.
-    
-    Args:
-        max_retries: Maximum number of retry attempts (5 means 1 initial + 5 retries = 6 total)
-        max_wait: Maximum wait time in seconds (60 seconds = 1 minute)
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            attempt = 0
-            base_wait = 1  # Start with 1 second
-            
-            while attempt <= max_retries:
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt >= max_retries:
-                        print(f"❌ Failed after {max_retries + 1} attempts: {str(e)}")
-                        raise
-                    
-                    # Calculate wait time: exponential backoff with jitter, capped at max_wait
-                    wait_time = min(base_wait * (2 ** attempt), max_wait)
-                    # Add jitter (random 0-10% to avoid thundering herd)
-                    wait_time = wait_time * (1 + random.uniform(0, 0.1))
-                    
-                    attempt += 1
-                    print(f"⚠️  LLM call failed (attempt {attempt}/{max_retries + 1}), retrying in {wait_time:.1f}s...")
-                    time.sleep(wait_time)
-            
-            # Should never reach here, but just in case
-            raise Exception(f"Failed after {max_retries + 1} attempts")
-        
-        return wrapper
-    return decorator
-
-
-def _merge_duplicate_sections(section_number: str, duplicate_sections: List[SectionsCharged]) -> SectionsCharged:
-    """
-    Merge duplicate sections using LLM to combine information from all duplicates.
-    
-    Args:
-        section_number: The section number that has duplicates
-        duplicate_sections: List of SectionsCharged objects with the same section_number
-        
-    Returns:
-        Merged SectionsCharged object
-    """
-    # Format duplicates for LLM
-    duplicates_text = ""
-    for idx, section in enumerate(duplicate_sections, 1):
-        duplicates_text += f"\n--- Duplicate {idx} ---\n"
-        duplicates_text += f"Section Description: {section.section_description}\n"
-        duplicates_text += f"Why Section is Relevant: {section.why_section_is_relevant}\n"
-        duplicates_text += f"Source: {section.source}\n"
-    
-    llm_with_structured_output = llm_model.with_structured_output(SectionsCharged)
-    prompt = f"""
-You are an expert in NDPS law. You need to merge duplicate entries for the same section number.
-
-Section Number: {section_number}
-
-Duplicate Entries:
-{duplicates_text}
-
-Task:
-Merge these duplicate entries into a single, comprehensive entry that:
-1. Combines the best information from all duplicates
-2. Creates a clear, comprehensive section_description using information from all duplicates
-3. Creates a comprehensive why_section_is_relevant that combines all relevant points
-4. Uses the most appropriate source (or combines sources if needed)
-
-Rules:
-- Use the section_number exactly: {section_number}
-- Combine information from all duplicates - do not lose important details
-- Ensure the merged entry is more comprehensive than any single duplicate
-- For source, use the format: "Page X, Document: [pdf_name], Source URL: [source_url]" from the most relevant duplicate, or combine if they differ
-- Maintain accuracy - only use information that is present in the duplicates
-
-Return the merged section.
-"""
-    
-    @exponential_backoff_retry(max_retries=5, max_wait=60)
-    def _invoke_merge():
-        return llm_with_structured_output.invoke(prompt)
-    
-    merged = _invoke_merge()
-    print(f"    ✅ Merged {section_number}")
-    return merged
-
 def ndps_legal_mapping(state: WorkflowState) -> dict:
     """
     Map NDPS legal provisions to FIR facts.
     """
-    print("\n" + "=" * 80)
-    print("🔍 [ndps_legal_mapping] Starting legal mapping...")
-    print("=" * 80)
+    logger.info("Starting NDPS legal mapping")
     
     if not state.get("pdf_content_in_english"):
         raise ValueError("pdf_content_in_english is required for FIR fact extraction")
     
     pdf_content = state["pdf_content_in_english"]
-    print(f"📝 [ndps_legal_mapping] FIR content length: {len(pdf_content)} characters")
-    print(f"📝 [ndps_legal_mapping] FIR preview: {pdf_content[:200]}...")
-
-    # Step 1: Extract actionable legal points from FIR content
-    print("\n[ndps_legal_mapping] Step 1: Extracting legal points from FIR content...")
+    logger.debug(f"FIR content length: {len(pdf_content)} characters")
     llm_with_structured_output = llm_model.with_structured_output(PointsToBeCharged)
     prompt = f"""
 You are an expert in Indian NDPS law.
@@ -164,29 +68,20 @@ FIR Text:
 
 Output: List only the factual points (maximum 10 high-quality points).
 """
-
-    print("[ndps_legal_mapping] Calling LLM to extract legal points...")
     
     @exponential_backoff_retry(max_retries=5, max_wait=60)
     def _invoke_extract_points():
         return llm_with_structured_output.invoke(prompt)
     
     response = _invoke_extract_points()
-    
     points = response.points_to_be_charged
-    print(f"✅ [ndps_legal_mapping] Extracted {len(points)} legal points:")
-    for i, point in enumerate(points, 1):
-        print(f"   {i}. {point[:100]}...")
+    logger.info(f"Extracted {len(points)} legal points")
 
     sections_mapped = []
-    print(f"\n[ndps_legal_mapping] Step 2: Mapping {len(points)} points to NDPS sections...")
     for idx, point in enumerate(points, 1):
-        print(f"\n[{idx}/{len(points)}] Processing point: {point[:80]}...")
-        
-        # Retrieve relevant NDPS Act sections using query_ndps
-        print(f"  🔎 [{idx}/{len(points)}] Searching FAISS index...")
+        logger.debug(f"Processing point {idx}/{len(points)}")
         results = query_ndps(point, k=5)
-        print(f"  ✅ [{idx}/{len(points)}] Found {len(results)} relevant sections")
+        logger.debug(f"Found {len(results)} relevant sections for point {idx}")
 
         # Format retrieved sections with section heading, exact legal wording, and source
         # query_ndps returns [{'chunk': {...}, 'score': float}]; chunk structure: section, subsection (may be null), chapter, chapter_heading, content, page_number, source_url, pdf_name
@@ -215,7 +110,6 @@ Output: List only the factual points (maximum 10 high-quality points).
             sections_found += "-" * 80 + "\n"
 
         # Create prompt with the legal point and retrieved sections
-        print(f"  🤖 [{idx}/{len(points)}] Calling LLM to map point to sections...")
         llm_with_structured_output = llm_model.with_structured_output(NdpsLegalMapping)
         prompt = f"""
 You are an expert in NDPS law.
@@ -269,40 +163,17 @@ Return output as JSON list only.
         
         response = _invoke_map_sections()
         sections_mapped.append(response.sections)
-        print(f"  ✅ [{idx}/{len(points)}] Mapped to {len(response.sections)} sections")
+        logger.debug(f"Mapped point {idx} to {len(response.sections)} sections")
 
     # Flatten the list of lists into a single list
-    print("\n[ndps_legal_mapping] Step 3: Flattening and deduplicating results...")
     flattened_sections = []
     for chunk_sections in sections_mapped:
         flattened_sections.extend(chunk_sections)
     
-    # Group sections by section_number to identify duplicates
-    sections_by_number = {}
-    for section in flattened_sections:
-        section_number = section.section_number
-        if section_number not in sections_by_number:
-            sections_by_number[section_number] = []
-        sections_by_number[section_number].append(section)
-    
-    # Merge duplicates using LLM if they exist
-    deduplicated_sections = []
-    for section_number, duplicate_sections in sections_by_number.items():
-        if len(duplicate_sections) == 1:
-            # No duplicates, just add the section
-            deduplicated_sections.append(duplicate_sections[0])
-        else:
-            # Duplicates found - merge them using LLM
-            print(f"  🔄 Merging {len(duplicate_sections)} duplicates for {section_number}...")
-            merged_section = _merge_duplicate_sections(section_number, duplicate_sections)
-            deduplicated_sections.append(merged_section)
-    
     # Convert back to list of dicts
-    final_sections = [section.model_dump() if hasattr(section, 'model_dump') else section for section in deduplicated_sections]
+    final_sections = [section.model_dump() if hasattr(section, 'model_dump') else section for section in flattened_sections]
     
-    print(f"✅ [ndps_legal_mapping] Total sections before deduplication: {len(flattened_sections)}")
-    print(f"✅ [ndps_legal_mapping] Total sections after deduplication: {len(final_sections)}")
-    print("=" * 80)
+    logger.info(f"Mapped {len(final_sections)} NDPS sections")
     
     return {
         "sections_mapped": final_sections
