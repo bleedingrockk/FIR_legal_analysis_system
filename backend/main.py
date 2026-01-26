@@ -43,7 +43,7 @@ def main():
         "main:app",  # String reference required for auto-reload
         host="0.0.0.0",
         port=8000,
-        reload=True,  # Enable auto-reload during development
+        reload=False,  # Enable auto-reload during development
         log_level="info"
     )
 

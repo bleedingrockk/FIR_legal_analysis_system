@@ -1,154 +1,127 @@
-from pydantic import BaseModel, Field
+from typing import List, Optional
+from pydantic import BaseModel
 from app.langgraph.state import WorkflowState
 from app.models.openai import llm_model
-from typing import List
-from app.rag.query_all import query_forensic
-import time
-import random
-from functools import wraps
+from app.utils.retry import exponential_backoff_retry
+import logging
 
+logger = logging.getLogger(__name__)
 
-# ------------------ Schemas ------------------
+class PlanPoint(BaseModel):
+    title: str                 # e.g. "Immediate Action"
+    date_range: Optional[str]  # e.g. "19/09/2025" or "19–20 Sep"
+    description: str           # Full paragraph of actions
 
-class NextSteps(BaseModel):
-    next_steps: List[str] = Field(
-        description="List of grounded next steps based strictly on retrieved legal content"
-    )
+class InvestigationPlan(BaseModel):
+    points: List[PlanPoint]
 
-class Summary_Points(BaseModel):
-    summary_points: List[str] = Field(
-        description="5-6 factual points from FIR that affect investigation/procedure"
-    )
+PROMPT = """
+You are a senior Indian criminal law expert and investigation officer.
 
+Analyse the FIR text below and generate a professional, chronological, court-ready Step-wise Investigation Plan for the case.
 
-# ------------------ Retry Decorator ------------------
+The plan must be realistic, procedural, and compliant with:
+- NDPS Act
+- CrPC
+- Juvenile Justice Act (if minor involved)
 
-def exponential_backoff_retry(max_retries=5, max_wait=60):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            attempt = 0
-            base_wait = 1
+Do NOT ask questions.
+Do NOT request extra information.
+Work only with the FIR content and generate a legally sound investigation roadmap.
 
-            while attempt <= max_retries:
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt >= max_retries:
-                        raise
+If any fact is missing from FIR, write the step as "to be verified" or "to be completed".
 
-                    wait_time = min(base_wait * (2 ** attempt), max_wait)
-                    wait_time *= (1 + random.uniform(0, 0.1))
+The output must always follow this structure:
 
-                    print(f"⚠️ Retry {attempt+1}/{max_retries+1} in {wait_time:.1f}s")
-                    time.sleep(wait_time)
-                    attempt += 1
+1. Immediate Actions (Day 0–1)
+   - FIR compliance steps
+   - Production before Magistrate/JJB
+   - NDPS reporting (Sections 52, 52A, 57)
+   - CWC / juvenile safeguards if minor
+   - Preservation of evidence
 
-        return wrapper
-    return decorator
+2. Child Welfare & Juvenile Safeguards (only if accused appears minor)
+   - JJB production within 24 hours
+   - Guardian intimation
+   - Age verification process
+   - CWC involvement
 
+3. Documentation & Procedural Compliance
+   - Panchnama
+   - Section 52A inventory
+   - Seal and chain of custody
+   - Case diary entries
 
-# ------------------ Main Logic ------------------
+4. Forensic & Sampling Process
+   - Magistrate-supervised sampling
+   - Dispatch to FSL
+   - Acknowledgement and report tracking
 
-def investigation_plan(state: WorkflowState) -> dict:
+5. Witness Examination
+   - Police witnesses
+   - Panch witnesses
+   - Independent witnesses
+   - Special witnesses (dog handler, FSL officer etc.)
 
-    if not state.get("pdf_content_in_english"):
-        raise ValueError("pdf_content_in_english is required")
+6. Evidence Development
+   - CCTV collection
+   - Digital evidence (mobile, CDR, extraction)
+   - Travel records / location evidence
+   - Identification of co-accused or supplier
 
-    pdf_content = state["pdf_content_in_english"]
+7. NDPS Legal Compliance Review
+   - Section 42/43/50 compliance
+   - Documentation of rights explained
+   - Proper reporting to superior officers
 
-    print("🔍 Extracting FIR facts...")
+8. Bail & Custody Considerations
+   - NDPS bail limitations
+   - Juvenile Justice bail principles (if applicable)
+   - Custody status and court approach
 
-    llm_structured = llm_model.with_structured_output(Summary_Points)
+9. Charge-sheet Preparation
+   - Evidence compilation
+   - Expert reports
+   - Section 173 CrPC filing timeline
+   - Final legal scrutiny
 
-    fir_prompt = f"""
-You are extracting structured facts from an FIR for NDPS investigation.
+10. Timeline Summary
+    - Day-wise or week-wise investigation progression
+    - Pending steps clearly marked
 
-Rules:
-- Extract only facts explicitly stated.
-- Do NOT infer, assume, or add.
-- Each point must affect legal procedure.
-- Keep to 5–6 points only.
-
-Examples:
-- "Accused found in possession of 10 kg ganja"
-- "Seizure occurred at railway station"
-- "Samples were not drawn at spot"
-- "Accused is juvenile"
+Style requirements:
+- Use formal Indian legal English
+- Use clear, professional headings
+- Avoid theory, focus on actionable investigation steps
+- Do not hallucinate facts; use conditional phrasing where FIR is silent
 
 FIR Text:
-{pdf_content}
-
-Return only 5–6 factual points.
+[PASTE FIR HERE]
 """
 
-    @exponential_backoff_retry()
-    def extract_facts():
-        return llm_structured.invoke(fir_prompt)
+def investigation_plan(state: WorkflowState) -> dict:
+    """
+    Generate investigation plan based on FIR facts.
+    """
+    logger.info("Starting investigation plan generation")
+    
+    if not state.get("pdf_content_in_english"):
+        raise ValueError("pdf_content_in_english is required for FIR fact extraction")
+    
+    pdf_content = state["pdf_content_in_english"]
+    logger.debug(f"FIR content length: {len(pdf_content)} characters")
 
-    response = extract_facts()
-    points = response.summary_points
-
-    print(f"✅ Extracted {len(points)} FIR points")
-
-    # ------------------ RAG Retrieval ------------------
-
-    try:
-        all_results = []
-        for p in points:
-            all_results.extend(query_forensic(p, k=5))
-    except FileNotFoundError as e:
-        print(f"⚠️ Forensic index not found: {e}")
-        print("⚠️ Skipping forensic RAG retrieval, generating steps without forensic context")
-        all_results = []
-
-    # Deduplicate similar chunks
-    seen = set()
-    unique_chunks = []
-    for r in all_results:
-        text = r["chunk"]["content"]
-        if text not in seen:
-            seen.add(text)
-            unique_chunks.append(text)
-
-    rag_context = "\n\n".join(f"- {c}" for c in unique_chunks) if unique_chunks else "No specific procedural guidance available from forensic guide."
-
-    print(f"📚 Retrieved {len(unique_chunks)} grounded legal chunks")
-
-    # ------------------ Generate Next Steps ------------------
-
-    llm_structured = llm_model.with_structured_output(NextSteps)
-
-    steps_prompt = f"""
-You are generating an NDPS investigation plan.
-
-IMPORTANT RULES:
-- Use ONLY the information provided below.
-- Do NOT use outside knowledge.
-- Do NOT invent steps.
-- Each step must be clearly supported by the content.
-
-Legal / Procedural Information:
-{rag_context}
-
-Task:
-Convert this into a concise step-by-step list of actions for the Investigating Officer.
-
-Output rules:
-- Each step must be short and actionable
-- Max 8 steps
-- If no procedural guidance is available, generate general investigation steps based on standard NDPS procedures
-"""
-
-    @exponential_backoff_retry()
-    def generate_steps():
-        return llm_structured.invoke(steps_prompt)
-
-    response = generate_steps()
-    next_steps = response.next_steps
-
-    print(f"✅ Generated {len(next_steps)} grounded next steps")
-
+    llm_with_structured_output = llm_model.with_structured_output(InvestigationPlan)
+    prompt = PROMPT.replace("[PASTE FIR HERE]", pdf_content)
+    
+    @exponential_backoff_retry(max_retries=5, max_wait=60)
+    def _invoke_investigation_plan():
+        return llm_with_structured_output.invoke(prompt)
+    
+    response = _invoke_investigation_plan()
+    state["investigation_plan"] = response.points
+    logger.info(f"Generated investigation plan with {len(response.points)} points")
     return {
-        "next_steps": next_steps
+        "investigation_plan": response.points
     }
+    

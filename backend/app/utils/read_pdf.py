@@ -6,6 +6,7 @@ def read_pdf(state: dict) -> dict:
     Read PDF from state (pdf_bytes or pdf_path) and return {"pdf_content": text}.
     No files are written to disk.
     """
+    print("Reading PDF...")
     pdf_bytes = state.get("pdf_bytes")
     pdf_path = state.get("pdf_path")
 
@@ -19,4 +20,5 @@ def read_pdf(state: dict) -> dict:
     text = [page.get_text() for page in doc]
     doc.close()
     final_text = "\n".join(text)
+    print("PDF read successfully.")
     return {"pdf_content": final_text}

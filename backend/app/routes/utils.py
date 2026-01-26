@@ -33,7 +33,10 @@ def format_state_for_display(state: dict) -> dict:
     bns_sections = parse_sections(state.get("bns_sections_mapped"))
     bnss_sections = parse_sections(state.get("bnss_sections_mapped"))
     bsa_sections = parse_sections(state.get("bsa_sections_mapped"))
+    forensic_guidelines = parse_sections(state.get("forensic_guidelines_mapped"))
     next_steps = state.get("next_steps") or []
+    investigation_plan = state.get("investigation_plan") or []
+    evidence_checklist = state.get("evidence_checklist")
 
     formatted = {
         "workflow_id": state.get("workflow_id"),
@@ -51,13 +54,17 @@ def format_state_for_display(state: dict) -> dict:
         "bns_sections": bns_sections,
         "bnss_sections": bnss_sections,
         "bsa_sections": bsa_sections,
+        "forensic_guidelines": forensic_guidelines,
         "next_steps": next_steps,
+        "investigation_plan": investigation_plan,
+        "evidence_checklist": evidence_checklist,
         "stats": {
             "ndps_count": len(ndps_sections),
             "bns_count": len(bns_sections),
             "bnss_count": len(bnss_sections),
             "bsa_count": len(bsa_sections),
-            "next_steps_count": len(next_steps),
+            "forensic_count": len(forensic_guidelines),
+            "next_steps_count": len(next_steps) + len(investigation_plan),
         },
     }
     return formatted

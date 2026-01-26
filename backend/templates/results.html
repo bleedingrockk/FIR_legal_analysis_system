@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -29,24 +30,26 @@
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 24px;
+            padding: 16px;
             min-height: 100vh;
             color: var(--text-primary);
             line-height: 1.6;
+            font-size: 14px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: var(--bg-primary);
-            border-radius: 16px;
+            border-radius: 12px;
             box-shadow: var(--shadow-lg);
-            padding: 32px;
+            padding: 20px;
             animation: fadeIn 0.3s ease-in;
         }
 
@@ -55,86 +58,91 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 32px;
-            padding-bottom: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
             border-bottom: 2px solid var(--border);
         }
-        
+
         .header-content h1 {
             color: var(--text-primary);
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             letter-spacing: -0.5px;
         }
 
         .header-meta {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             align-items: flex-end;
         }
-        
+
         .workflow-id {
             color: var(--text-secondary);
-            font-size: 13px;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            font-family: 'SF Mono', Monaco, monospace;
             background: var(--bg-secondary);
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
             border: 1px solid var(--border);
         }
 
         .file-name {
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 24px;
-            padding: 10px 20px;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .back-button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-        
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 24px;
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, var(--primary-light) 0%, #f0f4ff 100%);
             border: 1px solid var(--border);
-            padding: 20px;
-            border-radius: 12px;
+            padding: 14px 12px;
+            border-radius: var(--radius);
             text-align: center;
             transition: all 0.2s ease;
             position: relative;
@@ -150,117 +158,110 @@
             height: 3px;
             background: var(--primary);
         }
-        
+
         .stat-card:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
-        
+
         .stat-number {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             color: var(--primary);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             line-height: 1;
         }
-        
+
         .stat-label {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--text-secondary);
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
         }
-        
+
         .section-group {
-            margin-bottom: 40px;
+            margin-bottom: 24px;
         }
-        
+
         .section-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            border-radius: 10px;
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: var(--radius);
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-md);
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
         }
 
         .section-title::before {
             content: '📋';
-            font-size: 24px;
+            font-size: 18px;
         }
-        
+
         .section-item {
             background: var(--bg-primary);
             border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-            padding: 24px;
-            margin-bottom: 16px;
-            border-radius: 10px;
+            border-left: 3px solid var(--primary);
+            padding: 14px;
+            margin-bottom: 10px;
+            border-radius: var(--radius);
             transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
         }
-        
+
         .section-item:hover {
             border-left-color: var(--primary-dark);
             box-shadow: var(--shadow-md);
             transform: translateX(2px);
         }
-        
+
         .section-number {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--primary);
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
+            gap: 6px;
+            padding: 4px 10px;
             background: var(--primary-light);
-            border-radius: 6px;
+            border-radius: 4px;
         }
-        
-        .section-content {
+
+        .section-content .section-field {
+            margin-bottom: 10px;
+        }
+
+        .section-content .section-field:last-child {
             margin-bottom: 0;
         }
-        
-        .section-field {
-            margin-bottom: 20px;
-        }
-        
-        .section-field:last-child {
-            margin-bottom: 0;
-        }
-        
+
         .field-label {
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            display: block;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
             color: var(--text-secondary);
+            margin-bottom: 5px;
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
+
         .field-value {
             color: var(--text-primary);
-            line-height: 1.8;
-            padding: 16px;
+            line-height: 1.6;
+            padding: 10px;
             background: var(--bg-secondary);
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid var(--border);
-            font-size: 15px;
+            font-size: 13px;
         }
 
         .field-value.markdown-content {
-            background: var(--bg-primary);
+            background: transparent;
             padding: 0;
             border: none;
         }
@@ -268,55 +269,53 @@
         .field-value.markdown-content h1,
         .field-value.markdown-content h2,
         .field-value.markdown-content h3 {
-            margin-top: 24px;
-            margin-bottom: 12px;
+            margin-top: 12px;
+            margin-bottom: 6px;
             font-weight: 700;
             color: var(--text-primary);
         }
 
         .field-value.markdown-content h1 {
-            font-size: 24px;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 8px;
-        }
-
-        .field-value.markdown-content h2 {
-            font-size: 20px;
-        }
-
-        .field-value.markdown-content h3 {
             font-size: 18px;
         }
 
+        .field-value.markdown-content h2 {
+            font-size: 16px;
+        }
+
+        .field-value.markdown-content h3 {
+            font-size: 14px;
+        }
+
         .field-value.markdown-content p {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .field-value.markdown-content ul,
         .field-value.markdown-content ol {
-            margin-left: 24px;
-            margin-bottom: 12px;
+            margin-left: 18px;
+            margin-bottom: 8px;
         }
 
         .field-value.markdown-content li {
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .field-value.markdown-content code {
             background: var(--bg-tertiary);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
             color: var(--primary-dark);
         }
 
         .field-value.markdown-content pre {
             background: var(--bg-tertiary);
-            padding: 16px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             overflow-x: auto;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             border: 1px solid var(--border);
         }
 
@@ -326,46 +325,34 @@
         }
 
         .field-value.markdown-content blockquote {
-            border-left: 4px solid var(--primary);
-            padding-left: 16px;
-            margin: 16px 0;
+            border-left: 3px solid var(--primary);
+            padding-left: 12px;
+            margin: 10px 0;
             color: var(--text-secondary);
             font-style: italic;
-        }
-
-        .field-value.markdown-content a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .field-value.markdown-content a:hover {
-            text-decoration: underline;
         }
 
         .field-value.markdown-content strong {
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-primary);
         }
 
-        .field-value.markdown-content em {
-            font-style: italic;
-        }
-        
         .source {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--text-secondary);
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px solid var(--border);
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-family: 'SF Mono', Monaco, monospace;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            word-break: break-all;
         }
 
         .source::before {
             content: '🔗';
+            flex-shrink: 0;
         }
 
         .source a {
@@ -376,182 +363,551 @@
         .source a:hover {
             text-decoration: underline;
         }
-        
-        .empty-state {
-            text-align: center;
-            padding: 48px 32px;
-            color: var(--text-muted);
-            font-size: 15px;
-            background: var(--bg-secondary);
-            border-radius: 10px;
-            border: 2px dashed var(--border);
-        }
-        
+
         .fir-facts {
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid #bae6fd;
         }
-        
+
         .fir-facts h2 {
             color: var(--text-primary);
-            margin-bottom: 20px;
-            font-size: 20px;
+            margin-bottom: 12px;
+            font-size: 16px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .fir-facts h2::before {
             content: '📄';
-            font-size: 24px;
-        }
-        
-        .fir-fact-item {
-            margin-bottom: 16px;
-            padding: 16px;
-            background: white;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-            transition: all 0.2s ease;
+            font-size: 18px;
         }
 
-        .fir-fact-item:hover {
-            box-shadow: var(--shadow-sm);
+        .fir-fact-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #bae6fd;
+            border-left: 3px solid #0284c7;
         }
-        
+
         .fir-fact-item:last-child {
             margin-bottom: 0;
         }
-        
+
         .fir-fact-label {
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
             color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
+
         .fir-fact-value {
             color: var(--text-primary);
-            line-height: 1.8;
-            font-size: 15px;
+            line-height: 1.6;
+            font-size: 13px;
         }
 
         .next-steps {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid #bbf7d0;
         }
 
         .next-steps h2 {
             color: var(--text-primary);
-            margin-bottom: 20px;
-            font-size: 20px;
+            margin-bottom: 12px;
+            font-size: 16px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .next-steps h2::before {
             content: '✅';
-            font-size: 24px;
+            font-size: 18px;
         }
 
         .next-steps-list {
             list-style: none;
-            padding: 0;
         }
 
         .next-steps-list li {
-            margin-bottom: 12px;
-            padding: 14px 18px;
+            margin-bottom: 8px;
+            padding: 10px 12px 10px 32px;
             background: white;
-            border-radius: 8px;
-            border-left: 4px solid var(--success);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--success);
-            transition: all 0.2s ease;
+            border-radius: 6px;
+            border: 1px solid #bbf7d0;
+            border-left: 3px solid var(--success);
             position: relative;
-            padding-left: 48px;
-        }
-
-        .next-steps-list li::before {
-            content: '→';
-            position: absolute;
-            left: 18px;
-            color: var(--success);
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .next-steps-list li:hover {
-            box-shadow: var(--shadow-sm);
-            transform: translateX(4px);
         }
 
         .next-steps-list li:last-child {
             margin-bottom: 0;
         }
 
+        .next-steps-list li::before {
+            content: '→';
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            color: var(--success);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
         .next-steps-item-content {
             color: var(--text-primary);
-            line-height: 1.8;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        /* Investigation Plan Styles */
+        .investigation-plan {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid #bae6fd;
+        }
+
+        .investigation-plan-title {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .investigation-plan-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .investigation-step {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid #bae6fd;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .investigation-step:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px;
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+            border-bottom: 1px solid #bae6fd;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+
+        .step-title-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-title {
             font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 4px 0;
+            line-height: 1.4;
+        }
+
+        .step-date {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #0369a1;
+            background: #f0f9ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #bae6fd;
+        }
+
+        .step-content {
+            padding: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .step-content ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .step-content li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .step-content li:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Evidence Checklist Styles */
+        .evidence-checklist {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid #fde68a;
+        }
+
+        .evidence-checklist-title {
+            color: #92400e;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evidence-content {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid #fde68a;
+            overflow: hidden;
+        }
+
+        .evidence-intro {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 12px 16px;
+            border-bottom: 1px solid #fde68a;
+        }
+
+        .evidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #92400e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .evidence-badge::before {
+            content: '⚠️';
+            font-size: 16px;
+        }
+
+        .evidence-body {
+            padding: 16px;
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 13px;
+        }
+
+        .evidence-body h1,
+        .evidence-body h2,
+        .evidence-body h3,
+        .evidence-body h4 {
+            color: #92400e;
+            font-weight: 700;
+            margin-top: 16px;
+            margin-bottom: 10px;
+        }
+
+        .evidence-body h1 {
+            font-size: 17px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #fde68a;
+        }
+
+        .evidence-body h2 {
+            font-size: 16px;
+        }
+
+        .evidence-body h3 {
+            font-size: 15px;
+        }
+
+        .evidence-body h4 {
+            font-size: 14px;
+            color: #b45309;
+        }
+
+        .evidence-body ul {
+            margin: 12px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .evidence-body ul li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 10px;
+            line-height: 1.7;
+        }
+
+        .evidence-body ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 8px;
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        .evidence-body ul li strong {
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        .evidence-body p {
+            margin-bottom: 10px;
+        }
+
+        .evidence-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .evidence-body strong {
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .evidence-body em {
+            color: #b45309;
+            font-style: italic;
+        }
+
+        .evidence-body code {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            border: 1px solid #fde68a;
+        }
+
+        .evidence-body blockquote {
+            border-left: 3px solid #f59e0b;
+            background: #fffbeb;
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 4px;
+            color: #78350f;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 2px dashed var(--border);
+        }
+
+        .priority-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .priority-high {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .priority-normal {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .back-button {
+                display: none;
+            }
+
+            .section-item {
+                page-break-inside: avoid;
+            }
         }
 
         @media (max-width: 768px) {
             body {
-                padding: 16px;
+                padding: 12px;
             }
 
             .container {
-                padding: 20px;
+                padding: 16px;
             }
 
             .header {
                 flex-direction: column;
-                gap: 16px;
+                gap: 10px;
             }
 
             .header-meta {
                 align-items: flex-start;
+                width: 100%;
+            }
+
+            .file-name {
+                max-width: 100%;
             }
 
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .section-title {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+
+            .investigation-plan {
+                padding: 16px;
+            }
+
+            .investigation-plan-title {
+                font-size: 16px;
+            }
+
+            .step-header {
+                padding: 12px;
+            }
+
+            .step-number {
+                width: 28px;
+                height: 28px;
+                font-size: 13px;
+            }
+
+            .step-title {
+                font-size: 14px;
+            }
+
+            .step-content {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            .evidence-checklist {
+                padding: 16px;
+            }
+
+            .evidence-checklist-title {
+                font-size: 16px;
+            }
+
+            .evidence-intro {
+                padding: 10px 12px;
+            }
+
+            .evidence-badge {
+                font-size: 12px;
+            }
+
+            .evidence-body {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            .evidence-body h1 {
+                font-size: 16px;
+            }
+
+            .evidence-body h2 {
+                font-size: 15px;
+            }
+
+            .evidence-body h3 {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <a href="/" class="back-button">← Upload New FIR</a>
-        
+        <a href="/" class="back-button" aria-label="Upload new FIR">← Upload New FIR</a>
+
         <div class="header">
             <div class="header-content">
                 <h1>Legal Analysis Results</h1>
             </div>
             <div class="header-meta">
                 {% if state.pdf_filename %}
-                <div class="file-name">📄 {{ state.pdf_filename }}</div>
+                <div class="file-name" title="{{ state.pdf_filename }}">📄 {{ state.pdf_filename }}</div>
                 {% endif %}
-                <div class="workflow-id">ID: {{ (state.workflow_id or '')[:8] }}...</div>
+                <div class="workflow-id" title="{{ state.workflow_id }}">ID: {{ (state.workflow_id or '')[:8] }}...
+                </div>
             </div>
         </div>
-        
+
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">{{ state.stats.ndps_count }}</div>
@@ -569,6 +925,10 @@
                 <div class="stat-number">{{ state.stats.bsa_count }}</div>
                 <div class="stat-label">BSA</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ state.stats.forensic_count }}</div>
+                <div class="stat-label">Forensic</div>
+            </div>
             {% if state.stats.next_steps_count > 0 %}
             <div class="stat-card">
                 <div class="stat-number">{{ state.stats.next_steps_count }}</div>
@@ -576,7 +936,7 @@
             </div>
             {% endif %}
         </div>
-        
+
         {% if state.fir_facts %}
         <div class="fir-facts">
             <h2>FIR Facts Summary</h2>
@@ -589,9 +949,43 @@
         </div>
         {% endif %}
 
+        {% if state.investigation_plan %}
+        <div class="investigation-plan">
+            <h2 class="investigation-plan-title">📋 Detailed Investigation Plan</h2>
+            <div class="investigation-plan-grid">
+                {% for point in state.investigation_plan %}
+                <div class="investigation-step">
+                    <div class="step-header">
+                        <span class="step-number">{{ loop.index }}</span>
+                        <div class="step-title-wrapper">
+                            <h3 class="step-title">{{ point.title }}</h3>
+                            {% if point.date_range %}
+                            <span class="step-date">{{ point.date_range }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="step-content markdown-content" data-markdown>{{ point.description }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if state.evidence_checklist %}
+        <div class="evidence-checklist">
+            <h2 class="evidence-checklist-title">📦 Evidence Checklist & Compliance</h2>
+            <div class="evidence-content">
+                <div class="evidence-intro">
+                    <span class="evidence-badge">Critical Items & Admissibility Requirements</span>
+                </div>
+                <div class="evidence-body markdown-content" data-markdown>{{ state.evidence_checklist }}</div>
+            </div>
+        </div>
+        {% endif %}
+
         {% if state.next_steps %}
         <div class="next-steps">
-            <h2>Investigation Plan - Next Steps</h2>
+            <h2>Other Recommendations</h2>
             <ul class="next-steps-list">
                 {% for step in state.next_steps %}
                 <li>
@@ -601,7 +995,7 @@
             </ul>
         </div>
         {% endif %}
-        
+
         {% if state.ndps_sections %}
         <div class="section-group">
             <h2 class="section-title">NDPS Act</h2>
@@ -615,12 +1009,14 @@
                     </div>
                     <div class="section-field">
                         <span class="field-label">Relevance</span>
-                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}
+                        </div>
                     </div>
                     {% if section.source %}
                     <div class="source">
                         {% if section.source.startswith('http') %}
-                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        <a href="{{ section.source }}" target="_blank" rel="noopener noreferrer">{{ section.source
+                            }}</a>
                         {% else %}
                         {{ section.source }}
                         {% endif %}
@@ -631,7 +1027,7 @@
             {% endfor %}
         </div>
         {% endif %}
-        
+
         {% if state.bns_sections %}
         <div class="section-group">
             <h2 class="section-title">Bharatiya Nyaya Sanhita (BNS)</h2>
@@ -645,12 +1041,14 @@
                     </div>
                     <div class="section-field">
                         <span class="field-label">Relevance</span>
-                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}
+                        </div>
                     </div>
                     {% if section.source %}
                     <div class="source">
                         {% if section.source.startswith('http') %}
-                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        <a href="{{ section.source }}" target="_blank" rel="noopener noreferrer">{{ section.source
+                            }}</a>
                         {% else %}
                         {{ section.source }}
                         {% endif %}
@@ -675,12 +1073,14 @@
                     </div>
                     <div class="section-field">
                         <span class="field-label">Relevance</span>
-                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}
+                        </div>
                     </div>
                     {% if section.source %}
                     <div class="source">
                         {% if section.source.startswith('http') %}
-                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        <a href="{{ section.source }}" target="_blank" rel="noopener noreferrer">{{ section.source
+                            }}</a>
                         {% else %}
                         {{ section.source }}
                         {% endif %}
@@ -705,12 +1105,14 @@
                     </div>
                     <div class="section-field">
                         <span class="field-label">Relevance</span>
-                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}</div>
+                        <div class="field-value markdown-content" data-markdown>{{ section.why_section_is_relevant }}
+                        </div>
                     </div>
                     {% if section.source %}
                     <div class="source">
                         {% if section.source.startswith('http') %}
-                        <a href="{{ section.source }}" target="_blank">{{ section.source }}</a>
+                        <a href="{{ section.source }}" target="_blank" rel="noopener noreferrer">{{ section.source
+                            }}</a>
                         {% else %}
                         {{ section.source }}
                         {% endif %}
@@ -722,7 +1124,41 @@
         </div>
         {% endif %}
 
-        {% if not state.ndps_sections and not state.bns_sections and not state.bnss_sections and not state.bsa_sections and not state.next_steps %}
+        {% if state.forensic_guidelines %}
+        <div class="section-group">
+            <h2 class="section-title">Forensic Guidelines & Procedures</h2>
+            {% for guideline in state.forensic_guidelines %}
+            <div class="section-item" style="border-left-color: var(--warning);">
+                <div class="section-number" style="color: var(--warning); background-color: #fffbeb;">
+                    {{ guideline.guideline_topic }}
+                    <span class="priority-badge priority-{{ guideline.priority.lower() }}">
+                        {{ guideline.priority }}
+                    </span>
+                </div>
+                <div class="section-content">
+                    <div class="section-field">
+                        <span class="field-label">Action Required</span>
+                        <div class="field-value markdown-content" data-markdown>**Category:** {{
+                            guideline.action_category }}
+
+                            {{ guideline.guideline_description }}</div>
+                    </div>
+                    <div class="section-field">
+                        <span class="field-label">Why It Matters</span>
+                        <div class="field-value markdown-content" data-markdown>{{ guideline.why_guideline_is_relevant
+                            }}</div>
+                    </div>
+                    {% if guideline.source %}
+                    <div class="source">{{ guideline.source }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not state.ndps_sections and not state.bns_sections and not state.bnss_sections and not state.bsa_sections
+        and not state.next_steps %}
         <div class="empty-state">
             <p>No sections were mapped for this FIR.</p>
         </div>
@@ -730,7 +1166,6 @@
     </div>
 
     <script>
-        // Configure marked.js
         marked.setOptions({
             breaks: true,
             gfm: true,
@@ -738,7 +1173,6 @@
             mangle: false
         });
 
-        // Render all markdown content
         document.querySelectorAll('[data-markdown]').forEach(element => {
             const markdown = element.textContent.trim();
             if (markdown) {
@@ -746,11 +1180,11 @@
                     element.innerHTML = marked.parse(markdown);
                 } catch (error) {
                     console.error('Error rendering markdown:', error);
-                    // Fallback to plain text if markdown parsing fails
                     element.textContent = markdown;
                 }
             }
         });
     </script>
 </body>
+
 </html>

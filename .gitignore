@@ -123,3 +123,8 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+
+# cursor files
+.cursorrules
+.cursorignore
