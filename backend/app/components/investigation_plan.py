@@ -15,8 +15,68 @@ class PlanPoint(BaseModel):
 class InvestigationPlan(BaseModel):
     points: List[PlanPoint]
 
+
 PROMPT = """
 You are a senior Indian criminal law expert and investigation officer.
+
+You must strictly follow the official NDPS procedural guidance given below while preparing the investigation plan.
+
+========================
+OFFICIAL NDPS INVESTIGATION GUIDELINES
+========================
+
+Steps to be taken during Investigation:
+
+1. Recording of Statements:
+The next important step that is required to be taken is interrogation/examination of the suspects (accused) and the witnesses. Notice under Section 67 of the NDPS Act may be issued and statements about the identity of the person, address, background, education, occupation, involvement in the drug trade, etc., are to be recorded. This notice should be served under the signature of the concerned person. It must be ensured that the statement that is recorded is written in the language which is understood by the suspects/witnesses. The officer in whose presence the statement is given should also put his signature. If the statement is not written by the person himself, the officer should keep a note that the statement was read out and explained to the person in the language known to him.
+
+2. Disposal of Persons Arrested and Articles Seized:
+While arresting a person memo may be served to the person under his dated signature as a token of receipt of the same. The person being arrested should be informed of grounds for such arrest as per Sec. 52(1) of the NDPS Act. Other provisions of Section 52 have also to be complied with regard to arrested persons and seized article.
+
+3. Withdrawal of Sample:
+As per the amended provisions, the procedure of sampling is done by the learned Illaqa/Duty Magistrate under section 52A of NDPS Act. In other words, the process of withdrawing of samples has to be in the presence and under the supervision of the Magistrate only and the entire exercise has to be certified by him to be correct. Therefore, it is incumbent upon the SHO to forward the samples immediately to the Ld. MM Court for:
+a) For withdrawing representative samples in the presence of the Magistrate and certifying the correctness of the list of samples so drawn.
+b) Certifying the correctness of the inventory and
+c) Certifying photographs of such drugs or substances taken before the Magistrate as true.
+
+After withdrawing of the samples, the same should be sent to the laboratory within 72 hrs. Sometimes when the sample is sent to FSL, it is returned by the lab by raising some objection which is fatal for the case of prosecution. MHC must make sure that there should be no infirmity when the sample and the docket are sent to the lab.
+
+4. Informing the Superior about Seizure and Arrest:
+As per requirement of the Act, the immediate superior officer is to be sent a full report of all the particulars of an arrest. This requirement of law is not to be forgotten. Such report should be given within 48 hours of seizure or arrest in terms 57 of the NDPS Act.
+
+5. PC Remand of accused:
+The accused should be taken on PC remand to unearth the entire chain of suppliers, drug dealers involved in drug trafficking.
+
+6. Financial Investigation:
+Drug offences, unlike most other offences, are committed only with profit motive. One of the strategies to fight drug trafficking is denying the traffickers the fruits of their trafficking. Chapter VA of the NDPS Act provides for forfeiture of such illegally acquired properties. The property derived from or used in illicit traffic of drugs is liable to forfeiture. The provisions apply to convicted persons, detainees under PITNDPS, absconders, relatives and associates.
+
+7. Forfeiture of Property:
+i. Freezing of property under section 68F  
+ii. Confirmation by Competent Authority within 30 days  
+iii. Show Cause Notice under section 68H  
+iv. Forfeiture order under section 68I  
+v. Burden of proof on accused  
+vi. Fine in lieu of forfeiture  
+vii. Management by Competent Authority  
+viii. Appeal before Appellate Tribunal  
+
+8. Preparation of Charge-sheet:
+After completing investigation and collecting FSL result, charge-sheet must be prepared and filed without delay. Role of each witness must be clearly specified and all documents annexed.
+
+POST FILING CHARGE-SHEET:
+Proper pairvi through Pairvi Cell to ensure:
+- Supply of charge-sheet  
+- Written submissions  
+- Coordination with prosecutor  
+- Witness intimation  
+- Witness briefing  
+- Filing of FSL and sanctions  
+- Production of case property  
+- Court compliance  
+
+========================
+TASK
+========================
 
 Analyse the FIR text below and generate a professional, chronological, court-ready Step-wise Investigation Plan for the case.
 
@@ -34,70 +94,26 @@ If any fact is missing from FIR, write the step as "to be verified" or "to be co
 The output must always follow this structure:
 
 1. Immediate Actions (Day 0–1)
-   - FIR compliance steps
-   - Production before Magistrate/JJB
-   - NDPS reporting (Sections 52, 52A, 57)
-   - CWC / juvenile safeguards if minor
-   - Preservation of evidence
-
-2. Child Welfare & Juvenile Safeguards (only if accused appears minor)
-   - JJB production within 24 hours
-   - Guardian intimation
-   - Age verification process
-   - CWC involvement
-
+2. Child Welfare & Juvenile Safeguards (only if minor)
 3. Documentation & Procedural Compliance
-   - Panchnama
-   - Section 52A inventory
-   - Seal and chain of custody
-   - Case diary entries
-
 4. Forensic & Sampling Process
-   - Magistrate-supervised sampling
-   - Dispatch to FSL
-   - Acknowledgement and report tracking
-
 5. Witness Examination
-   - Police witnesses
-   - Panch witnesses
-   - Independent witnesses
-   - Special witnesses (dog handler, FSL officer etc.)
-
 6. Evidence Development
-   - CCTV collection
-   - Digital evidence (mobile, CDR, extraction)
-   - Travel records / location evidence
-   - Identification of co-accused or supplier
-
 7. NDPS Legal Compliance Review
-   - Section 42/43/50 compliance
-   - Documentation of rights explained
-   - Proper reporting to superior officers
-
 8. Bail & Custody Considerations
-   - NDPS bail limitations
-   - Juvenile Justice bail principles (if applicable)
-   - Custody status and court approach
-
 9. Charge-sheet Preparation
-   - Evidence compilation
-   - Expert reports
-   - Section 173 CrPC filing timeline
-   - Final legal scrutiny
-
 10. Timeline Summary
-    - Day-wise or week-wise investigation progression
-    - Pending steps clearly marked
 
-Style requirements:
-- Use formal Indian legal English
-- Use clear, professional headings
-- Avoid theory, focus on actionable investigation steps
-- Do not hallucinate facts; use conditional phrasing where FIR is silent
+Style:
+- Formal Indian legal English
+- Actionable steps only
+- No assumptions
+- Use conditional language where FIR is silent
 
 FIR Text:
 [PASTE FIR HERE]
 """
+
 
 def investigation_plan(state: WorkflowState) -> dict:
     """

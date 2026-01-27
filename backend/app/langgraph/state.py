@@ -1,5 +1,5 @@
 from langgraph.graph import MessagesState
-from typing import List, Any
+from typing import List, Any, Dict
 
 class WorkflowState(MessagesState):
     pdf_path: str | None = None
@@ -8,7 +8,7 @@ class WorkflowState(MessagesState):
     pdf_content: str | None = None
     pdf_content_in_english: str | None = None
     fir_facts: dict | None = None
-    sections_mapped: List[dict] | None = None
+    ndps_sections_mapped: List[dict] | None = None
     bns_sections_mapped: List[dict] | None = None
     bnss_sections_mapped: List[dict] | None = None
     bsa_sections_mapped: List[dict] | None = None
@@ -16,3 +16,6 @@ class WorkflowState(MessagesState):
     investigation_plan: List[dict] | None = None
     next_steps: List[str] | None = None
     evidence_checklist: str | List[str] | None = None
+    dos: List[str] | None = None
+    donts: List[str] | None = None
+    potential_prosecution_weaknesses: Dict[str, str] | None = None

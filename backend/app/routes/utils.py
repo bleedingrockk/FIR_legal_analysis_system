@@ -29,7 +29,7 @@ def parse_sections(sections_data) -> List[Dict[str, Any]]:
 
 def format_state_for_display(state: dict) -> dict:
     """Format the workflow state for display in templates (no file paths)."""
-    ndps_sections = parse_sections(state.get("sections_mapped"))
+    ndps_sections = parse_sections(state.get("ndps_sections_mapped"))
     bns_sections = parse_sections(state.get("bns_sections_mapped"))
     bnss_sections = parse_sections(state.get("bnss_sections_mapped"))
     bsa_sections = parse_sections(state.get("bsa_sections_mapped"))
@@ -37,6 +37,9 @@ def format_state_for_display(state: dict) -> dict:
     next_steps = state.get("next_steps") or []
     investigation_plan = state.get("investigation_plan") or []
     evidence_checklist = state.get("evidence_checklist")
+    dos = state.get("dos") or []
+    donts = state.get("donts") or []
+    potential_prosecution_weaknesses = state.get("potential_prosecution_weaknesses") or {}
 
     formatted = {
         "workflow_id": state.get("workflow_id"),
@@ -58,6 +61,9 @@ def format_state_for_display(state: dict) -> dict:
         "next_steps": next_steps,
         "investigation_plan": investigation_plan,
         "evidence_checklist": evidence_checklist,
+        "dos": dos,
+        "donts": donts,
+        "potential_prosecution_weaknesses": potential_prosecution_weaknesses,
         "stats": {
             "ndps_count": len(ndps_sections),
             "bns_count": len(bns_sections),

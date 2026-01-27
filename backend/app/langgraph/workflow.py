@@ -11,6 +11,8 @@ from app.components.bnss_legal_mapping import bnss_legal_mapping
 from app.components.bsa_legal_mapping import bsa_legal_mapping
 from app.components.investigation_plan import investigation_plan
 from app.components.evidence_checklist import generate_evidence_checklist
+from app.components.dos_and_dont import generate_dos_and_donts
+from app.components.potential_prosecution_weaknesses import generate_potential_prosecution_weaknesses
 
 # Create the workflow graph
 workflow_graph = StateGraph(WorkflowState)
@@ -25,6 +27,8 @@ workflow_graph.add_node("bnss_legal_mapping", bnss_legal_mapping)
 workflow_graph.add_node("bsa_legal_mapping", bsa_legal_mapping)
 workflow_graph.add_node("investigation_plan", investigation_plan)
 workflow_graph.add_node("generate_evidence_checklist", generate_evidence_checklist)
+workflow_graph.add_node("generate_dos_and_donts", generate_dos_and_donts)
+workflow_graph.add_node("generate_potential_prosecution_weaknesses", generate_potential_prosecution_weaknesses)
 
 # Define the workflow edges
 # Sequential: START -> read_pdf -> translate -> extract
@@ -44,9 +48,17 @@ workflow_graph.add_edge("bns_legal_mapping", "investigation_plan")
 workflow_graph.add_edge("bnss_legal_mapping", "investigation_plan")
 workflow_graph.add_edge("bsa_legal_mapping", "investigation_plan")
 
-# Sequential: investigation_plan -> evidence_checklist -> END
+# Sequential: investigation_plan -> evidence_checklist
 workflow_graph.add_edge("investigation_plan", "generate_evidence_checklist")
-workflow_graph.add_edge("generate_evidence_checklist", END)
+
+# Parallel: evidence_checklist fans out to dos_and_donts and prosecution_weaknesses
+workflow_graph.add_edge("generate_evidence_checklist", "generate_dos_and_donts")
+workflow_graph.add_edge("generate_evidence_checklist", "generate_potential_prosecution_weaknesses")
+
+# Convergence: Both must complete before END
+workflow_graph.add_edge("generate_dos_and_donts", END)
+workflow_graph.add_edge("generate_potential_prosecution_weaknesses", END)
 
 # Compile the graph (this is what gets invoked)
 graph = workflow_graph.compile()
+

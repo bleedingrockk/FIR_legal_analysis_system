@@ -53,11 +53,7 @@ FIR Text:
 
 Output: List investigation checkpoints that need verification/action."""
 
-    @exponential_backoff_retry(max_retries=5, max_wait=60)
-    def _invoke_extract_checkpoints():
-        return llm_with_structured_output.invoke(prompt)
-    
-    response = _invoke_extract_checkpoints()
+    response = llm_with_structured_output.invoke(prompt)
     checkpoints = response.investigation_checkpoints
     logger.info(f"Extracted {len(checkpoints)} investigation checkpoints")
     
@@ -107,12 +103,12 @@ Task: Create a COMPREHENSIVE EVIDENCE CHECKLIST with critical items and admissib
 
 Output Format (EXACT):
 4. Evidence Checklist (Critical Items & Admissibility)
- - Evidence Name: Description of the evidence, its importance, chain of custody requirements, admissibility formalities, and legal compliance. Include specific details from FIR (exhibit numbers, dates, witness names). Mention what could go wrong.
+ - Evidence Name: Description of the evidence, its importance, chain of custody requirements, admissibility formalities, and legal compliance. Include specific details from FIR (exhibit numbers, dates, witness names, locations, quantities, times). Mention what could go wrong.
  - Another Evidence Name: Description...
 
 EXAMPLE FORMAT:
- - Seized Ganji Bundles: The 5 bundles (exhibits Mark-A,B) themselves are primary evidence. Must be sealed and stored with clear chain of custody. Admissibility requires all seizure formalities (panchnama, seals, signatures) be impeccable.
- - Seizure Panchnama & Inventory: Documented panchnama (with RPF officers and CWO as panchas) showing marking of each bundle is crucial. It must note date/time, location, and witness signatures. Any lapse (e.g. missing signature) could raise doubts.
+ - Seized Ganji Bundles: The 5 bundles weighing 25.5 kg (exhibits Mark-A,B) seized on 15-Jan-2024 at 14:30 hrs at Secunderabad Railway Station Platform No. 3 are primary evidence. Must be sealed and stored with clear chain of custody. Admissibility requires all seizure formalities (panchnama, seals, signatures) be impeccable.
+ - Seizure Panchnama & Inventory: Documented panchnama dated 15-Jan-2024 (with RPF officers SI Ramesh Kumar and CWO Priya Sharma as panchas) showing marking of each bundle at the scene is crucial. It must note exact date/time (14:30 hrs), precise location (Platform 3, near coach S-7), and witness signatures. Any lapse (e.g. missing signature of pancha Priya Sharma) could raise doubts.
 
 EVIDENCE CATEGORIES TO COVER:
 - Physical evidence (seized contraband, packaging, seals, exhibits)
@@ -129,16 +125,19 @@ EVIDENCE CATEGORIES TO COVER:
 REQUIREMENTS:
 - Each bullet point should be ONE evidence item with its name followed by colon
 - Write detailed paragraph descriptions (3-5 sentences minimum per item)
+- MANDATORY: Include SPECIFIC details from FIR in EVERY point - names of accused/witnesses, exact dates, times, locations, quantities, exhibit numbers, case numbers, station names
 - Include specific legal sections (NDPS Sec.50, Evidence Act Sec.65B, etc.)
 - Mention chain of custody, sealing procedures, witness requirements
 - Note potential weaknesses or compliance gaps
-- Reference specific details from the FIR
+- Reference concrete FIR details (not generic placeholders)
 - Cover 10-15 evidence items comprehensively
+- Use actual names, numbers, and specifics from the FIR wherever available
 
 End with:
 (Legal importance: Each piece ties the accused to possession for sale. NDPS requires physical possession + intent to traffic. The combination of large quantity, travel documents, cash, and confession strongly establishes intent. Proper packaging and sealing with video/photos under e-Sakshya provides chain-of-custody.)
 
 Output the complete formatted checklist as a single text string."""
+
 
     @exponential_backoff_retry(max_retries=5, max_wait=60)
     def _invoke_generate_checklist():

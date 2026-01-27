@@ -176,5 +176,5 @@ Return output as JSON list only.
     logger.info(f"Mapped {len(final_sections)} NDPS sections")
     
     return {
-        "sections_mapped": final_sections
+        "ndps_sections_mapped": final_sections
     }
