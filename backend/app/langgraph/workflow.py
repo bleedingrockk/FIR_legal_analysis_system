@@ -13,6 +13,8 @@ from app.components.investigation_plan import investigation_plan
 from app.components.evidence_checklist import generate_evidence_checklist
 from app.components.dos_and_dont import generate_dos_and_donts
 from app.components.potential_prosecution_weaknesses import generate_potential_prosecution_weaknesses
+from app.components.historical_cases import historical_cases
+from app.components.inestigation_and_legal_timeline import investigation_and_legal_timeline
 
 # Create the workflow graph
 workflow_graph = StateGraph(WorkflowState)
@@ -26,6 +28,8 @@ workflow_graph.add_node("bns_legal_mapping", bns_legal_mapping)
 workflow_graph.add_node("bnss_legal_mapping", bnss_legal_mapping)
 workflow_graph.add_node("bsa_legal_mapping", bsa_legal_mapping)
 workflow_graph.add_node("investigation_plan", investigation_plan)
+workflow_graph.add_node("investigation_and_legal_timeline", investigation_and_legal_timeline)
+workflow_graph.add_node("historical_cases", historical_cases)
 workflow_graph.add_node("generate_evidence_checklist", generate_evidence_checklist)
 workflow_graph.add_node("generate_dos_and_donts", generate_dos_and_donts)
 workflow_graph.add_node("generate_potential_prosecution_weaknesses", generate_potential_prosecution_weaknesses)
@@ -48,14 +52,18 @@ workflow_graph.add_edge("bns_legal_mapping", "investigation_plan")
 workflow_graph.add_edge("bnss_legal_mapping", "investigation_plan")
 workflow_graph.add_edge("bsa_legal_mapping", "investigation_plan")
 
-# Sequential: investigation_plan -> evidence_checklist
+# Parallel: investigation_plan fans out to historical_cases, investigation_and_legal_timeline, and evidence_checklist
+workflow_graph.add_edge("investigation_plan", "historical_cases")
+workflow_graph.add_edge("investigation_plan", "investigation_and_legal_timeline")
 workflow_graph.add_edge("investigation_plan", "generate_evidence_checklist")
 
 # Parallel: evidence_checklist fans out to dos_and_donts and prosecution_weaknesses
 workflow_graph.add_edge("generate_evidence_checklist", "generate_dos_and_donts")
 workflow_graph.add_edge("generate_evidence_checklist", "generate_potential_prosecution_weaknesses")
 
-# Convergence: Both must complete before END
+# Convergence: All must complete before END
+workflow_graph.add_edge("historical_cases", END)
+workflow_graph.add_edge("investigation_and_legal_timeline", END)
 workflow_graph.add_edge("generate_dos_and_donts", END)
 workflow_graph.add_edge("generate_potential_prosecution_weaknesses", END)
 

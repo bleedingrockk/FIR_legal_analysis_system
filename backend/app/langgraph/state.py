@@ -19,3 +19,5 @@ class WorkflowState(MessagesState):
     dos: List[str] | None = None
     donts: List[str] | None = None
     potential_prosecution_weaknesses: Dict[str, str] | None = None
+    historical_cases: List[dict] | None = None
+    investigation_and_legal_timeline: Dict[str, str] | None = None

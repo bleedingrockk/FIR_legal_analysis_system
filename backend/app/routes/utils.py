@@ -40,6 +40,8 @@ def format_state_for_display(state: dict) -> dict:
     dos = state.get("dos") or []
     donts = state.get("donts") or []
     potential_prosecution_weaknesses = state.get("potential_prosecution_weaknesses") or {}
+    historical_cases = state.get("historical_cases") or []
+    investigation_and_legal_timeline = state.get("investigation_and_legal_timeline")
 
     formatted = {
         "workflow_id": state.get("workflow_id"),
@@ -64,6 +66,8 @@ def format_state_for_display(state: dict) -> dict:
         "dos": dos,
         "donts": donts,
         "potential_prosecution_weaknesses": potential_prosecution_weaknesses,
+        "historical_cases": historical_cases,
+        "investigation_and_legal_timeline": investigation_and_legal_timeline,
         "stats": {
             "ndps_count": len(ndps_sections),
             "bns_count": len(bns_sections),

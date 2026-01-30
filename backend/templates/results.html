@@ -1217,6 +1217,114 @@
                 min-width: auto;
             }
         }
+
+        /* Historical Cases Styles */
+        .historical-cases-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid #bae6fd;
+        }
+
+        .historical-cases-title {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .historical-cases-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .historical-case-card {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid #bae6fd;
+            border-left: 4px solid var(--primary);
+            padding: 18px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .historical-case-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-left-color: var(--primary-dark);
+        }
+
+        .case-header {
+            margin-bottom: 12px;
+        }
+
+        .case-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .case-summary {
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 13px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .case-url {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .case-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .case-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .historical-cases-section {
+                padding: 16px;
+            }
+
+            .historical-cases-title {
+                font-size: 16px;
+            }
+
+            .historical-case-card {
+                padding: 14px;
+            }
+
+            .case-title {
+                font-size: 15px;
+            }
+
+            .case-summary {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 
@@ -1308,6 +1416,13 @@
                 <span class="tab-badge">{{ state.investigation_plan|length }}</span>
             </button>
             {% endif %}
+            {% if state.investigation_and_legal_timeline %}
+            <button
+                class="tab-button {% if not state.fir_facts and not state.ndps_sections and not state.bns_sections and not state.bnss_sections and not state.bsa_sections and not state.investigation_plan %}active{% endif %}"
+                onclick="switchTab('investigation-timeline')">
+                <span>📅 Investigation & Legal Timeline</span>
+            </button>
+            {% endif %}
             {% if state.evidence_checklist %}
             <button
                 class="tab-button {% if not state.fir_facts and not state.ndps_sections and not state.bns_sections and not state.bnss_sections and not state.bsa_sections and not state.investigation_plan %}active{% endif %}"
@@ -1331,6 +1446,12 @@
             <button class="tab-button" onclick="switchTab('next-steps')">
                 <span>✅ Recommendations</span>
                 <span class="tab-badge">{{ state.next_steps|length }}</span>
+            </button>
+            {% endif %}
+            {% if state.historical_cases %}
+            <button class="tab-button" onclick="switchTab('historical-cases')">
+                <span>📚 Historical Cases</span>
+                <span class="tab-badge">{{ state.historical_cases|length }}</span>
             </button>
             {% endif %}
         </div>
@@ -1370,6 +1491,29 @@
                         <div class="step-content markdown-content" data-markdown>{{ point.description }}</div>
                     </div>
                     {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if state.investigation_and_legal_timeline %}
+        <div id="investigation-timeline"
+            class="tab-content {% if not state.fir_facts and not state.ndps_sections and not state.bns_sections and not state.bnss_sections and not state.bsa_sections and not state.investigation_plan %}active{% endif %}">
+            <div class="investigation-plan">
+                <h2 class="investigation-plan-title">📅 Investigation & Legal Timeline</h2>
+                {% if state.investigation_and_legal_timeline.date_string %}
+                <div style="background: white; padding: 16px; border-radius: var(--radius); margin-bottom: 16px; border: 1px solid #bae6fd; border-left: 4px solid var(--primary);">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 18px;">📆</span>
+                        <span style="font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Date</span>
+                    </div>
+                    <div style="font-size: 16px; font-weight: 600; color: var(--primary);">
+                        {{ state.investigation_and_legal_timeline.date_string }}
+                    </div>
+                </div>
+                {% endif %}
+                <div style="background: white; padding: 20px; border-radius: var(--radius); border: 1px solid #bae6fd;">
+                    <div class="field-value markdown-content" data-markdown>{{ state.investigation_and_legal_timeline.timeline }}</div>
                 </div>
             </div>
         </div>
@@ -1588,6 +1732,31 @@
                     </li>
                     {% endfor %}
                 </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if state.historical_cases %}
+        <div id="historical-cases" class="tab-content">
+            <div class="historical-cases-section">
+                <h2 class="historical-cases-title">📚 Historical Cases</h2>
+                <div class="historical-cases-grid">
+                    {% for case in state.historical_cases %}
+                    <div class="historical-case-card">
+                        <div class="case-header">
+                            <h3 class="case-title">{{ case.title }}</h3>
+                        </div>
+                        <div class="case-summary markdown-content" data-markdown>{{ case.summary }}</div>
+                        {% if case.url %}
+                        <div class="case-url">
+                            <a href="{{ case.url }}" target="_blank" rel="noopener noreferrer" class="case-link">
+                                🔗 View Source
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
         {% endif %}
