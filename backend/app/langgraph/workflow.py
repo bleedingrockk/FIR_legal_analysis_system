@@ -1,4 +1,5 @@
 from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
 
 from app.langgraph.state import WorkflowState
 from app.utils.read_pdf import read_pdf
@@ -15,11 +16,51 @@ from app.components.dos_and_dont import generate_dos_and_donts
 from app.components.potential_prosecution_weaknesses import generate_potential_prosecution_weaknesses
 from app.components.historical_cases import historical_cases
 from app.components.inestigation_and_legal_timeline import investigation_and_legal_timeline
+from app.components.defence_perspective_rebuttal import generate_defence_perspective_rebuttal
+from app.components.summary_for_the_court import generate_summary_for_the_court
+from app.components.chargesheet import generate_chargesheet
 
-# Create the workflow graph
+
+checkpointer = MemorySaver()
+
+def route_all_sections(state: WorkflowState) -> list[str]:
+    """Route to ALL selected sections - they all run in PARALLEL"""
+    selected_sections = state.get("sections", [])
+    routes = []
+    
+    if "ndps" in selected_sections:
+        routes.append("ndps_legal_mapping")
+    if "bns" in selected_sections:
+        routes.append("bns_legal_mapping")
+    if "bnss" in selected_sections:
+        routes.append("bnss_legal_mapping")
+    if "bsa" in selected_sections:
+        routes.append("bsa_legal_mapping")
+    if "investigation_plan" in selected_sections:
+        routes.append("investigation_plan")
+    if "historical_cases" in selected_sections:
+        routes.append("historical_cases")
+    if "timeline" in selected_sections:
+        routes.append("investigation_and_legal_timeline")
+    if "evidence" in selected_sections:
+        routes.append("generate_evidence_checklist")
+    if "dos_and_donts" in selected_sections:
+        routes.append("generate_dos_and_donts")
+    if "weaknesses" in selected_sections:
+        routes.append("generate_potential_prosecution_weaknesses")
+    if "defence_rebuttal" in selected_sections:
+        routes.append("generate_defence_perspective_rebuttal")
+    if "court_summary" in selected_sections:
+        routes.append("generate_summary_for_the_court")
+    if "chargesheet" in selected_sections:
+        routes.append("generate_chargesheet")
+    
+    return routes if routes else [END]
+
+# Build graph
 workflow_graph = StateGraph(WorkflowState)
 
-# Add all nodes to the graph
+# Add all nodes
 workflow_graph.add_node("read_pdf", read_pdf)
 workflow_graph.add_node("translate_to_english", translate_to_english)
 workflow_graph.add_node("extract_fir_fact", extract_fir_fact)
@@ -33,40 +74,50 @@ workflow_graph.add_node("historical_cases", historical_cases)
 workflow_graph.add_node("generate_evidence_checklist", generate_evidence_checklist)
 workflow_graph.add_node("generate_dos_and_donts", generate_dos_and_donts)
 workflow_graph.add_node("generate_potential_prosecution_weaknesses", generate_potential_prosecution_weaknesses)
+workflow_graph.add_node("generate_defence_perspective_rebuttal", generate_defence_perspective_rebuttal)
+workflow_graph.add_node("generate_summary_for_the_court", generate_summary_for_the_court)
+workflow_graph.add_node("generate_chargesheet", generate_chargesheet)
 
-# Define the workflow edges
-# Sequential: START -> read_pdf -> translate -> extract
+# Permanent sequential path
 workflow_graph.add_edge(START, "read_pdf")
 workflow_graph.add_edge("read_pdf", "translate_to_english")
 workflow_graph.add_edge("translate_to_english", "extract_fir_fact")
 
-# Parallel: extract_fir_fact fans out to all 4 legal mapping nodes
-workflow_graph.add_edge("extract_fir_fact", "ndps_legal_mapping")
-workflow_graph.add_edge("extract_fir_fact", "bns_legal_mapping")
-workflow_graph.add_edge("extract_fir_fact", "bnss_legal_mapping")
-workflow_graph.add_edge("extract_fir_fact", "bsa_legal_mapping")
+# Route to ALL selected sections at once - they ALL run in PARALLEL
+workflow_graph.add_conditional_edges(
+    "extract_fir_fact",
+    route_all_sections,
+    {
+        "ndps_legal_mapping": "ndps_legal_mapping",
+        "bns_legal_mapping": "bns_legal_mapping",
+        "bnss_legal_mapping": "bnss_legal_mapping",
+        "bsa_legal_mapping": "bsa_legal_mapping",
+        "investigation_plan": "investigation_plan",
+        "investigation_and_legal_timeline": "investigation_and_legal_timeline",
+        "historical_cases": "historical_cases",
+        "generate_evidence_checklist": "generate_evidence_checklist",
+        "generate_dos_and_donts": "generate_dos_and_donts",
+        "generate_potential_prosecution_weaknesses": "generate_potential_prosecution_weaknesses",
+        "generate_defence_perspective_rebuttal": "generate_defence_perspective_rebuttal",
+        "generate_summary_for_the_court": "generate_summary_for_the_court",
+        "generate_chargesheet": "generate_chargesheet",
+        END: END,
+    }
+)
 
-# Convergence: All 4 mapping nodes must complete before investigation_plan
-workflow_graph.add_edge("ndps_legal_mapping", "investigation_plan")
-workflow_graph.add_edge("bns_legal_mapping", "investigation_plan")
-workflow_graph.add_edge("bnss_legal_mapping", "investigation_plan")
-workflow_graph.add_edge("bsa_legal_mapping", "investigation_plan")
-
-# Parallel: investigation_plan fans out to historical_cases, investigation_and_legal_timeline, and evidence_checklist
-workflow_graph.add_edge("investigation_plan", "historical_cases")
-workflow_graph.add_edge("investigation_plan", "investigation_and_legal_timeline")
-workflow_graph.add_edge("investigation_plan", "generate_evidence_checklist")
-
-# Parallel: evidence_checklist fans out to dos_and_donts and prosecution_weaknesses
-workflow_graph.add_edge("generate_evidence_checklist", "generate_dos_and_donts")
-workflow_graph.add_edge("generate_evidence_checklist", "generate_potential_prosecution_weaknesses")
-
-# Convergence: All must complete before END
-workflow_graph.add_edge("historical_cases", END)
+# All selected nodes go straight to END
+workflow_graph.add_edge("ndps_legal_mapping", END)
+workflow_graph.add_edge("bns_legal_mapping", END)
+workflow_graph.add_edge("bnss_legal_mapping", END)
+workflow_graph.add_edge("bsa_legal_mapping", END)
+workflow_graph.add_edge("investigation_plan", END)
 workflow_graph.add_edge("investigation_and_legal_timeline", END)
+workflow_graph.add_edge("historical_cases", END)
+workflow_graph.add_edge("generate_evidence_checklist", END)
 workflow_graph.add_edge("generate_dos_and_donts", END)
 workflow_graph.add_edge("generate_potential_prosecution_weaknesses", END)
+workflow_graph.add_edge("generate_defence_perspective_rebuttal", END)
+workflow_graph.add_edge("generate_summary_for_the_court", END)
+workflow_graph.add_edge("generate_chargesheet", END)
 
-# Compile the graph (this is what gets invoked)
-graph = workflow_graph.compile()
-
+graph = workflow_graph.compile(checkpointer=checkpointer)

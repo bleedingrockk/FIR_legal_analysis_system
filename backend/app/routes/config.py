@@ -13,3 +13,9 @@ STATIC_DIR.mkdir(exist_ok=True)
 
 # In-memory storage for results (display only; no persistence to disk)
 results_store = {}
+
+# Store PDF bytes separately for workflow continuation
+pdf_store = {}
+
+# Session management: maps session_id to session data
+session_store = {}

@@ -25,6 +25,47 @@ You must strictly follow the official NDPS procedural guidance given below while
 OFFICIAL NDPS INVESTIGATION GUIDELINES
 ========================
 
+PUNISHMENT SYSTEM UNDER NDPS ACT:
+
+The Narcotic Drugs and Psychotropic Substances Act, 1985 views drug offences very seriously and prescribes stringent penalties. The Act follows a graded system of punishment varying with the recovered quantities (small, commercial and intermediate quantity) as defined in the act of narcotic drugs and psychotropic substances. The punishment prescribed for different quantities is as follows:
+
+Small quantity: Rigorous imprisonment for a term which may extend to "one year", or with fine which may extend to Rs.10,000 or with both.
+
+Intermediate quantity: Rigorous imprisonment for a term which may extend to ten years and with fine which may extend to Rs. 1,00,000.
+
+Commercial quantity: Rigorous imprisonment for a term which shall not be less than ten years but which may extend to twenty years and shall also be liable to fine which shall not be less than Rs. 1,00,000 but which may extend to Rs. 2,00,000. Provided that the court may for reasons to be recorded in the judgement impose a fine exceeding 2 lakh rupees.
+
+MANDATORY COMPLIANCES:
+
+SECTION 41 (Issue of warrant/authorization by a Magistrate or a G.O.):
+Section 41 of the Act empowers a Magistrate or a Gazetted Officer to issue a warrant/authorization for a search and seizure. Such authorization has to be based on information taken down in writing. If G.O. himself has to carry out search or to conduct raid under section 41, it is not necessary for him to get any authorization from other G.O.
+
+SECTION 42 (Search, Seizure & Arrest at private place without authorization/warrant):
+This section relates to entry into and search of any building, conveyance or enclosed place without a warrant/an authorization.
+a) During day time any empowered officer is authorized to conduct search, seizure and arrest.
+b) During night time any empowered officer is authorized to conduct search, seizure and arrest only after recording his satisfaction for non-compliance of section 41.
+c) Any SI can search any licensed manufacturing unit.
+However this section should not be invoked and a warrant/authorization as per section 41 of NDPS Act should mandatorily be obtained.
+
+SECTION 50:
+Section 50 of the NDPS Act provides the provisions of personal search of a person suspected to be carrying NDPS drugs on him. The section mandates:
+i. Any person who is intended to be searched has a right to be searched before a gazette officer or a magistrate.
+ii. It is the responsibility of the empowered officer to apprise the person in writing of his right to be searched before the nearest Gazetted Officer or a Magistrate. The denial should also be recorded. The right does not apply to search of bags being carried by the person; it applies only to search of his person as expounded by the Apex court/High courts in several judgements.
+
+SECTION 51 (Procedure of Search, Seizure and Arrest):
+a) Search – Search to be in front of two independent witnesses, search of self and search party before accused and independent witnesses.
+b) Seizure – Empowered Officer should ascertain the genuineness and the quantity of the recovered contraband and proceed to draw a Seizure Memo. As per Notification 899 E dated 23.12.2022 Seizure, Storage, Sampling and Disposal Rule 2022 seized items to be brought to the nearest Magistrate.
+c) Arrest – as defined under section 52 and draw an arrest memo as per u/s 49 of BNSS previously u/s 46 of Cr.PC.
+
+SECTION 52 (Grounds of Arrest):
+This section casts a duty on the arresting officer to inform the accused person about the grounds of his arrest and to forward the accused along with the seized NDPS article to the Magistrate or to the nearest SHO as the case may be.
+
+SECTION 52A (Disposal of Seized Articles):
+This section mandates about the disposal of seized contrabands by forwarding it to the nearest Magistrate as per DOR Notification.
+
+SECTION 57 (Report to immediate Superior officer):
+All Arrests and Seizures to be informed within 48 hours to immediate Superior Officer.
+
 Steps to be taken during Investigation:
 
 1. Recording of Statements:

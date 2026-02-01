@@ -42,6 +42,15 @@ def format_state_for_display(state: dict) -> dict:
     potential_prosecution_weaknesses = state.get("potential_prosecution_weaknesses") or {}
     historical_cases = state.get("historical_cases") or []
     investigation_and_legal_timeline = state.get("investigation_and_legal_timeline")
+    defence_perspective_rebuttal = state.get("defence_perspective_rebuttal") or []
+    summary_for_the_court = state.get("summary_for_the_court")
+    chargesheet = state.get("chargesheet")
+    
+    # Convert Pydantic models to dicts if needed
+    if summary_for_the_court and hasattr(summary_for_the_court, 'model_dump'):
+        summary_for_the_court = summary_for_the_court.model_dump()
+    if chargesheet and hasattr(chargesheet, 'model_dump'):
+        chargesheet = chargesheet.model_dump()
 
     formatted = {
         "workflow_id": state.get("workflow_id"),
@@ -68,6 +77,10 @@ def format_state_for_display(state: dict) -> dict:
         "potential_prosecution_weaknesses": potential_prosecution_weaknesses,
         "historical_cases": historical_cases,
         "investigation_and_legal_timeline": investigation_and_legal_timeline,
+        "defence_perspective_rebuttal": defence_perspective_rebuttal,
+        "summary_for_the_court": summary_for_the_court,
+        "chargesheet": chargesheet,
+        "sections": state.get("sections", []),  # Selected sections
         "stats": {
             "ndps_count": len(ndps_sections),
             "bns_count": len(bns_sections),

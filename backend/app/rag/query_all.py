@@ -38,6 +38,10 @@ def _load_index(act_code: str):
         'forensic': {
             'chunks_path': RAG_BASE_PATH / 'forensic' / 'chunks.json',
             'index_path': RAG_BASE_PATH / 'forensic' / 'legal_index.faiss'
+        },
+        'ndps_judgements': {
+            'chunks_path': RAG_BASE_PATH / 'ndps_judgements' / 'chunks.json',
+            'index_path': RAG_BASE_PATH / 'ndps_judgements' / 'legal_index.faiss'
         }
     }
     
@@ -199,6 +203,38 @@ def query_forensic(query: str, k: int = 5) -> List[Dict]:
         List of results with 'chunk' and 'score' keys
     """
     index, chunks = _load_index('forensic')
+    
+    # Generate query embedding
+    query_vector = embedding_model.embed_query(query)
+    query_vector = np.array([query_vector]).astype('float32')
+    faiss.normalize_L2(query_vector)
+    
+    # Search
+    scores, indices = index.search(query_vector, k)
+    
+    results = []
+    for idx, score in zip(indices[0], scores[0]):
+        if idx < len(chunks):
+            results.append({
+                'chunk': chunks[idx],
+                'score': float(score)
+            })
+    
+    return results
+
+
+def query_ndps_judgements(query: str, k: int = 5) -> List[Dict]:
+    """
+    Query NDPS Historical Judgements
+    
+    Args:
+        query: Search query
+        k: Number of results to return
+        
+    Returns:
+        List of results with 'chunk' and 'score' keys
+    """
+    index, chunks = _load_index('ndps_judgements')
     
     # Generate query embedding
     query_vector = embedding_model.embed_query(query)

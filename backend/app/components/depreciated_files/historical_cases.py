@@ -1,17 +1,22 @@
+from tavily import TavilyClient
 from pydantic import BaseModel, Field
 from app.langgraph.state import WorkflowState
 from app.models.openai import llm_model
-from app.rag import query_ndps_judgements
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
+# Initialize Tavily client with API key from environment
+tavily_api_key = os.getenv("TAVILY_API_KEY", "")
+client = TavilyClient(tavily_api_key)
+
 class Question(BaseModel):
-    question: str = Field(description="Question that I can search in historical NDPS judgements related to the given FIR")
+    question: str = Field(description="Question that I can search on the internet to find historical cases related to the given FIR")
 
 def historical_cases(state: WorkflowState) -> dict:
     """
-    Search for historical cases related to the FIR using FAISS index of NDPS judgements.
+    Search for historical cases related to the FIR and return summarized results.
     """
     logger.info("Starting historical cases search")
     
@@ -22,7 +27,7 @@ def historical_cases(state: WorkflowState) -> dict:
     logger.debug(f"FIR content length: {len(pdf_content)} characters")
     
     # Generate search question based on FIR content
-    prompt = f"""Based on the following FIR content, create one specific search query to find relevant court judgments in NDPS cases from the historical judgements database.
+    prompt = f"""Based on the following FIR content, create one specific search query to find relevant court judgments in NDPS cases.
 
 FIR Content: {pdf_content}
 
@@ -32,17 +37,16 @@ CRITICAL REQUIREMENTS:
 3. Extract other key facts: age of accused, quantity seized (small/intermediate/commercial), procedural issues, etc.
 
 Examples of good search queries:
-- "bail application Ganja NDPS cases"
-- "commercial quantity Cannabis search and seizure"
-- "Section 50 NDPS Act Heroin procedural compliance"
-- "minor accused NDPS cases acquittal"
+- "NDPS Ganja cases where the accused is a minor"
+- "NDPS Cannabis cases involving commercial quantity"
+- "NDPS Heroin cases with procedural lapses in search and seizure"
 
 Instructions:
 1. First identify the specific substance/drug mentioned in the FIR
 2. Extract other key facts (age of accused, quantity seized, procedural issues, etc.)
 3. Create a focused search query that includes the substance name and other relevant facts
 4. Keep the query concise but specific - MUST include the substance type
-5. Focus on legally significant aspects (quantities, procedures, accused characteristics, sections of NDPS Act)
+5. Focus on legally significant aspects (quantities, procedures, accused characteristics)
 
 Create a search query that MUST include the substance name and other relevant facts from the FIR:
 """
@@ -70,25 +74,38 @@ Substance name:"""
     historical_cases_list = []
     
     try:
-        # Search using FAISS index
-        results = query_ndps_judgements(search_query, k=10)
+        # Search using Tavily
+        response = client.search(
+            query=search_query,
+            search_depth="advanced",
+            include_usage=True,
+            max_results=10,  # Increased to account for filtering
+            include_raw_content=True,
+            exclude_domains=["https://indiankanoon.org"]
+        )
+        
+        # Process results
+        results = response.get('results', []) if isinstance(response, dict) else response.results
         
         for result in results:
-            chunk = result['chunk']
-            score = result['score']
-            content = chunk.get('content', '')
+            # Handle both dict and object result formats
+            if isinstance(result, dict):
+                title = result.get('title', '')
+                url = result.get('url', '')
+                raw_content = result.get('raw_content', '') or ''
+            else:
+                title = result.title
+                url = result.url
+                raw_content = result.raw_content if hasattr(result, 'raw_content') and result.raw_content else ""
             
             # Skip duplicates
-            case_number = chunk.get('case_number', '')
-            year = chunk.get('year', '')
-            case_id = f"{case_number}_{year}"
-            if any(case.get('case_id') == case_id for case in historical_cases_list):
-                logger.debug(f"Skipping duplicate: Case {case_number}, Year {year}")
+            if any(case['url'] == url for case in historical_cases_list):
+                logger.debug(f"Skipping duplicate: {title}")
                 continue
             
             # Validate that result mentions the substance from FIR
             if fir_substance:
-                result_text = content.lower()
+                result_text = (title + " " + raw_content).lower()
                 # Check for common substance name variations
                 substance_variations = {
                     'ganja': ['ganja', 'cannabis', 'marijuana', 'marihuana', 'weed', 'bhang'],
@@ -107,59 +124,38 @@ Substance name:"""
                 
                 # Check if any variation is mentioned
                 if not any(var in result_text for var in variations):
-                    logger.debug(f"Skipping result - doesn't mention {fir_substance}: Case {case_number}")
+                    logger.debug(f"Skipping result - doesn't mention {fir_substance}: {title}")
                     continue
             
-            # Extract case title from content (first few lines usually contain case name)
-            lines = content.split('\n')
-            case_title = ""
-            for line in lines[:10]:  # Check first 10 lines
-                line = line.strip()
-                if line and len(line) > 10 and not line.isdigit() and not line.startswith('==='):
-                    # Look for patterns like "vs.", "Vs.", "versus"
-                    if any(keyword in line.lower() for keyword in ['vs.', 'versus', 'v.', 'v/s']):
-                        case_title = line
-                        break
-                    elif not case_title and len(line) > 20:
-                        case_title = line
-            
-            if not case_title:
-                case_title = f"Case {case_number} ({year})" if case_number and year else "NDPS Case"
-            
-            # Summarize content using LLM
+            # Summarize raw_content using LLM
             summary = ""
-            if content:
+            if raw_content:
                 # Limit content to avoid token limits
-                truncated_content = content[:3000] if len(content) > 3000 else content
+                truncated_raw = raw_content[:4000] if len(raw_content) > 4000 else raw_content
                 
                 # Better summarization prompt
-                summary_prompt = f"""Analyze this legal case judgement and provide a concise summary in 3-4 sentences covering:
+                summary_prompt = f"""Analyze this legal case and provide a concise summary in 3-4 sentences covering:
 1. Case name and court
 2. Key facts and circumstances
 3. Legal issues/sections involved
 4. Court's decision and reasoning
 
 Legal Case Content:
-{truncated_content}
+{truncated_raw}
 """
                 
                 try:
                     summary_response = llm_model.invoke(summary_prompt)
                     summary = summary_response.content if hasattr(summary_response, 'content') else str(summary_response)
-                    logger.debug(f"Summarized case: {case_title}")
+                    logger.debug(f"Summarized case: {title}")
                 except Exception as e:
-                    logger.error(f"Error summarizing case {case_title}: {e}")
-                    # Fallback: use first 200 characters
-                    summary = content[:200] + "..." if len(content) > 200 else content
+                    logger.error(f"Error summarizing case {title}: {e}")
+                    summary = "Summary unavailable"
             
             case_data = {
-                "title": case_title,
-                "url": None,  # No URL for indexed judgements
-                "summary": summary,
-                "case_number": case_number,
-                "year": year,
-                "case_id": case_id,
-                "score": float(score)
+                "title": title,
+                "url": url,
+                "summary": summary
             }
             historical_cases_list.append(case_data)
             
@@ -168,7 +164,7 @@ Legal Case Content:
                 break
                 
     except Exception as e:
-        logger.error(f"Error searching judgements with query '{search_query}': {e}")
+        logger.error(f"Error searching with query '{search_query}': {e}")
     
     logger.info(f"Found {len(historical_cases_list)} historical cases")
     

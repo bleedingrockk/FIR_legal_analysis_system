@@ -20,28 +20,7 @@ def load_result(workflow_id: str) -> dict:
     raise HTTPException(status_code=404, detail="Workflow result not found")
 
 
-@router.get("/results/{workflow_id}", response_class=HTMLResponse)
-async def results_page(request: Request, workflow_id: str):
-    """
-    Display the analysis results in HTML format.
-    
-    Args:
-        request: FastAPI request object
-        workflow_id: Unique workflow identifier
-        
-    Returns:
-        HTML template response with formatted results
-        
-    Raises:
-        HTTPException: If result not found
-    """
-    state = load_result(workflow_id)
-    formatted_state = format_state_for_display(state)
-    
-    return templates.TemplateResponse("results.html", {
-        "request": request,
-        "state": formatted_state
-    })
+# Removed - React app handles the results page now
 
 
 @router.get("/api/results/{workflow_id}")
@@ -53,9 +32,12 @@ async def get_results_api(workflow_id: str):
         workflow_id: Unique workflow identifier
         
     Returns:
-        JSON response with raw workflow result
+        JSON response with formatted workflow result
         
     Raises:
         HTTPException: If result not found
     """
-    return load_result(workflow_id)
+    result = load_result(workflow_id)
+    # Format the result for the React app
+    from .utils import format_state_for_display
+    return format_state_for_display(result)
